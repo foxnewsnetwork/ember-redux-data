@@ -1,15 +1,16 @@
 /*jshint node:true*/
 module.exports = {
-  description: ''
+  description: 'Installation blueprint for ember-redux-data',
+  normalizeEntityName: function() {},
 
-  // locals: function(options) {
-  //   // Return custom template variables here.
-  //   return {
-  //     foo: options.entity.options.foo
-  //   };
-  // }
-
-  // afterInstall: function(options) {
-  //   // Perform extra work here.
-  // }
+  afterInstall: function(options) {
+    return this.addAddonsToProject( {
+      packages: [
+        { name: 'ember-normalizr-shim', target: '^0.1.2' },
+        { name: 'ember-redux-actions', target: '^0.1.1' },
+        { name: 'ember-redux-orm', target: '^0.2.1' },
+        { name: 'ember-redux', target: '^2.0.0' }
+      ]
+    });
+  }
 };

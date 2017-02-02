@@ -11,6 +11,12 @@ The purpose of this repo is to expose the tools and usage patterns that I person
 2. redux-orm - for normalization and data consistency
 3. normalizr - for transforming and untransforming server-side responses
 
+## Concepts
+#### Requests
+#### Selectors
+#### Thunk
+#### Redux-Actions
+
 ## How To Use
 Request objects serve as the contact point between ember's `model` hook and populating the redux store with data entries.
 
@@ -70,10 +76,14 @@ export default connect(states, actions)(Ember.Component.extend({
 }));
 ```
 
-So notice we have 2 concepts:
+## Writing Requests
 
-1. Requests - used to make remote calls, transform server-data, and populate the redux store
-2. Selectors - used to pull useful data from the redux store
+## Writing Normalizers
+
+## Declaring ORM
+
+## Cookbook Recipes
+
 ## Installation
 
 * `git clone <repository-url>` this repository

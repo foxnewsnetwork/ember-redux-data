@@ -1,4 +1,6 @@
 {
   "name": "ember-redux-data",
-  "dependencies": {}
+  "dependencies": {
+    "foundation-sites": "^6.2.4"
+  }
 }
