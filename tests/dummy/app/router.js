@@ -7,6 +7,12 @@ const Router = Ember.Router.extend({
 });
 
 Router.map(function() {
+  this.route('testspace');
+
+  this.route('introduction');
+  this.route('basics');
+  this.route('advanced');
+  this.route('recipes');
 });
 
 export default Router;
