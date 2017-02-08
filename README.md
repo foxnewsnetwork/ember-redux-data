@@ -78,7 +78,7 @@ export default connect(states, actions)(Ember.Component.extend({
 
 ## Writing Requests
 
-## Writing Normalizers
+## Writing Thunkers
 
 ## Declaring ORM
 
