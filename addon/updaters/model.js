@@ -1,4 +1,5 @@
 import Actions from '../actions/model';
+import modelName from '../utils/model-name';
 
 const NOOP = () => {};
 
@@ -26,9 +27,9 @@ export const ModelUpdater = {
       Model.withId(data).delete();
     }
   }
-};
+}
 
 export default function update(session, action) {
   const fn = ModelUpdater[action.type] || NOOP;
   return fn(session, action);
-};
+}

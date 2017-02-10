@@ -12,42 +12,144 @@ The purpose of this repo is to expose the tools and usage patterns that I person
 3. normalizr - for transforming and untransforming server-side responses
 
 ## Concepts
-#### Requests
+Redux is big on functional programming, and, a such, a good data layer for use with redux should expose functions as pure as possible.
+
+#### Remote APIs
+Your app should have a `remote-apis/*` directory that describes all the external endpoints your app will be hitting. `remote-api`s should all be functions that return a promise with the external response:
+
+```typesript
+run :: (any) -> Promise
+```
+
+For example: `app/remote-apis/user.js` might look like:
+
+```javascript
+import request from 'ember-ajax/request';
+
+export function find(id) {
+  return request(`my/endpoint/users/${id}`);
+}
+```
+
+In general, keep your remote-api functions as simple and stupid as possible. They shouldn't know about your application at all and so should theoretically be drag-and-droppable into any application.
+
+#### Thunkers
+What is a thunker? A thunker is a function that takes an remote response and transforms them into a redux-dispatchable thunk that will populate the redux store
+
+```typescript
+type Thunk = (dispatch: Dispatch): Promise
+
+type Thunker = (response: JSON): Thunk
+```
+
+Think of such a thunk as a batch of redux-actions.
+
+To follow the convention set aside by redux's normalizr library, all thunkers should have the following form:
+
+`app/thunkers/example.js`
+```javascript
+export function toEntities(serverResponse) {
+  // Do what you need to wrangle the server response
+}
+export default function exampleThunker(serverResponse) {
+  return thunkifyEntities(toEntities(serverResponse));
+}
+```
+
+`normalizr` normalizes data the following format:
+- Input:
+```json
+{
+  "id": "123",
+  "author": {
+    "id": "1",
+    "name": "Paul"
+  },
+  "title": "My awesome blog post",
+  "comments": [
+    {
+      "id": "324",
+      "commenter": {
+        "id": "2",
+        "name": "Nicole"
+      }
+    }
+  ]
+}
+```
+
+- Output:
+```json
+{
+  result: "123",
+  entities: {
+    "articles": {
+      "123": {
+        id: "123",
+        author: "1",
+        title: "My awesome blog post",
+        comments: [ "324" ]
+      }
+    },
+    "users": {
+      "1": { "id": "1", "name": "Paul" },
+      "2": { "id": "2", "name": "Nicole" }
+    },
+    "comments": {
+      "324": { id: "324", "commenter": "2" }
+    }
+  }
+}
+```
+Read about the normalizr here https://github.com/paularmstrong/normalizr
+
 #### Selectors
-#### Thunk
-#### Redux-Actions
+What is a selector? Selectors are a function that take in the entire redux application state, filters out what is irrelevant for our use case, and returns only what we need. This is best illustrated with an example:
+
+```javascript
+import { createSelector } from 'redux-orm';
+const selectRetiredAuthors = createSelector(orm, (session) => session.Author.get({ isRetired: true }) );
+```
+
+#### Dispatchables
+`dispatch`able objects (aka requests) are the bridge between the `Ember.Route` and the outside world. They wrap the API, thunker, and friends so that Ember doesn't have to ever know about the details of the outside world.
+
+`app/requests/find`
+```javascript
+import userAPI from 'dummy/remote-apis/user';
+import { exampleThunker } from 'dummy/thunkers/user';
+import ENV from 'dummy/config/environment';
+
+export default const findRequest = (id) => (dispatch) =>
+  userAPI.find(id, ENV)
+    .then(exampleThunker)
+    .then(dispatch));
+```
+
+We'll call this `dispatch`able thing a request. From Ember's point of view, `request`s should be opaque generators of IO. Because of this opacity, it's possible for us to switch request implementation strategies easily (e.g. using thunk, saga, or even a for loop)
 
 ## How To Use
 Request objects serve as the contact point between ember's `model` hook and populating the redux store with data entries.
 
 Consider an example route `dummy/routes/user.js`
 ```javascript
-import Request from 'dummy/requests/users';
 import route from 'ember-redux/route';
 import Ember from 'ember';
-import ENV from 'dummy/config/environment';
+import findRequest from 'dummy/requests/find';
 
 const { inject: { service } } = Ember;
-const request = new Request(ENV);
 
-function model(params) {
-  const { dog, cat, bat } = this.getProperties('dog', 'cat', 'bat');
-  const redux = this.get('redux');
-  const findThunk = request.find({ dog, cat, bat, id: params.id });
-
-  return redux.dispatch(findThunk).then(() => params.id);
+function model(dispatch, params) {
+  return dispatch(findRequest(params.id));
 }
-
-export default route({ model })(Ember.Component.extend({
-  dog: service('dog'),
-  cat: ...,
-  bat: ...
-}));
 ```
+
+#### Accessing Data
+
 And as with all redux apps, you pull data out of the redux store with designated `data-delegate` components like so:
 
 ```handlebars
-{{#data-delegate-single-user userId=model as |user|}}
+{{#data-delegate-single-user userId=3 as |user|}}
   {{whatever-user-presentation-component user=user}}
 {{/data-delegate-single-user}}
 ```
