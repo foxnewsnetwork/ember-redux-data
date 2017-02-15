@@ -1,5 +1,7 @@
 # ember-redux-data
 
+[![Build Status](https://travis-ci.org/foxnewsnetwork/ember-redux-data.svg?branch=master)](https://travis-ci.org/foxnewsnetwork/ember-redux-data)
+
 Blueprints and utilities for using the redux data stack in Ember.js
 
 ## Redux Data Stack
