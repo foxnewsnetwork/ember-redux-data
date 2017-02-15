@@ -31,6 +31,7 @@
     "broccoli-asset-rev": "^2.4.5",
     "broccoli-clean-css": "^1.1.0",
     "broccoli-funnel": "^1.1.0",
+    "broccoli-merge-trees": "^1.2.1",
     "ember-ajax": "^2.4.1",
     "ember-cli": "2.11.0",
     "ember-cli-app-version": "^2.0.0",
