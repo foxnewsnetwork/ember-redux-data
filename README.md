@@ -178,11 +178,35 @@ export default connect(states, actions)(Ember.Component.extend({
 }));
 ```
 
-## Writing Requests
+## Boilerplate Checklist
+In order to setup `ember-redux-data` for the first time, you must do the following:
 
-## Writing Thunkers
+- [ ] add the orm reducer into your project `app/reducers/index`
+```javascript
+import orm from 'dummy/orm';
+import updater from 'ember-redux-data/updaters/model';
+import { createReducer } from 'redux-orm';
+import otherReducers from '...';
 
-## Declaring ORM
+export default {
+  orm: createReducer(orm, updater),
+  ...otherReducers
+}
+```
+
+- [ ] update your `app/orm.js` with your models:
+```javascript
+import { ORM } from 'redux-orm';
+import Dress from './orm-models/dress';
+import Performance from './orm-models/performance';
+import Song from './orm-models/song';
+import Vocaloid from './orm-models/vocaloid';
+
+const orm = new ORM();
+orm.register(Dress, Performance, Song, Vocaloid);
+
+export default orm;
+```
 
 ## Cookbook Recipes
 

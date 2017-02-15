@@ -1,5 +1,8 @@
 import ownKeys from './own-keys';
 import Actions from '../actions/model';
+import Ember from 'ember';
+
+const { String: { singularize, capitalize } } = Ember;
 
 function add(f, g) {
   return (x) => { f(x); g(x); };
@@ -9,7 +12,7 @@ const NOOP = () => {};
 
 function thunkify(modelName, data) {
   return (dispatch) => ownKeys(data)
-    .map((id) => Actions.ormCreateModel(modelName, data[id]))
+    .map((id) => Actions.ormCreateOrUpdateModel(modelName, data[id]))
     .map(dispatch);
 }
 
@@ -35,8 +38,9 @@ const entities = {
   }
 };
 */
-export default function thunkifyEntities(entities) {
+const standardizedModelName = (x) => capitalize(singularize(x));
+export default function thunkifyEntities(entities, f=standardizedModelName) {
   return ownKeys(entities)
-    .map((modelName) => thunkify(modelName, entities[modelName]))
+    .map((modelName) => thunkify(f(modelName), entities[modelName]))
     .reduce(add, NOOP);
 }

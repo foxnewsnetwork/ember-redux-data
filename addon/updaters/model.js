@@ -2,7 +2,12 @@ import Actions from '../actions/model';
 import modelName from '../utils/model-name';
 
 const NOOP = () => {};
-
+const NULL_MODEL = {
+  update: NOOP,
+  create: NOOP,
+  withId: () => NULL_MODEL,
+  delete: NOOP
+};
 function createOrUpdate(Model, data) {
   const id = data[Model.idAttribute];
   if(Model.hasId(id)) {
@@ -13,23 +18,31 @@ function createOrUpdate(Model, data) {
 }
 
 export const ModelUpdater = {
-  [Actions.ormCreateOrUpdateModel]({ payload }, Model) {
-      const { ModelClass, data } = payload;
-
-      if(modelName(ModelClass) === Model.modelName) {
-        createOrUpdate(Model, data);
-      }
-    },
-  [Actions.ormDestroyModel]({ payload }, Model) {
-    const { ModelClass, data } = payload;
-
-    if(modelName(ModelClass) === Model.modelName) {
-      Model.withId(data).delete();
-    }
+  [Actions.ormCreateOrUpdateModel](Model, { payload }) {
+    const { data } = payload;
+    createOrUpdate(Model, data);
+  },
+  [Actions.ormDestroyModel](Model, { payload }) {
+    const { data } = payload;
+    Model.withId(data).delete();
   }
 }
 
+function get(obj, key, defaultResult) {
+  if(obj && typeof obj === 'object' && typeof key === 'string') {
+    return obj[key] || defaultResult;
+  } else {
+    return defaultResult;
+  }
+}
+function findModel(session, payload) {
+  const ModelClass = modelName(get(payload, 'ModelClass'));
+  return get(session, ModelClass, NULL_MODEL);
+}
+
 export default function update(session, action) {
-  const fn = ModelUpdater[action.type] || NOOP;
-  return fn(session, action);
+  const fn = get(ModelUpdater, action.type, NOOP);
+  const Model = findModel(session, action.payload);
+
+  return fn(Model, action);
 }

@@ -7,7 +7,9 @@ const Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-  this.route('testspace');
+  this.route('testspace', function() {
+    this.route('vocaloid', { path: 'vocaloid/:id' });
+  });
 
   this.route('introduction');
   this.route('basics');
