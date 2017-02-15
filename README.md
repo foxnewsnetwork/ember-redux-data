@@ -4,6 +4,8 @@
 
 Blueprints and utilities for using the redux data stack in Ember.js
 
+# WIP! Work in Progress!
+
 ## Redux Data Stack
 Unlike Ember.js which recommends ember-data as your app's go-to data-consistency and remote-io layer (and react which recommends graphQL via relay), redux is lot less opinionated regarding what tools your app should use in this regard.
 
