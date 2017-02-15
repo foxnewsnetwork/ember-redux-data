@@ -17,23 +17,23 @@ The purpose of this repo is to expose the tools and usage patterns that I person
 Redux is big on functional programming, and, a such, a good data layer for use with redux should expose functions as pure as possible.
 
 #### Remote APIs
-Your app should have a `remote-apis/*` directory that describes all the external endpoints your app will be hitting. `remote-api`s should all be functions that return a promise with the external response:
+Your app should have a `requests/*` directory that describes all the external endpoints your app will be hitting. `request`s should all be functions that return a promise with the external response:
 
 ```typesript
 run :: (any) -> Promise
 ```
 
-For example: `app/remote-apis/user.js` might look like:
+For example: `app/requests/user.js` might look like:
 
 ```javascript
-import request from 'ember-ajax/request';
+import ajax from 'ember-ajax/request';
 
 export function find(id) {
-  return request(`my/endpoint/users/${id}`);
+  return ajax(`my/endpoint/users/${id}`);
 }
 ```
 
-In general, keep your remote-api functions as simple and stupid as possible. They shouldn't know about your application at all and so should theoretically be drag-and-droppable into any application.
+In general, keep your request functions as simple and stupid as possible. They shouldn't know about your application at all and so should theoretically be drag-and-droppable into any application.
 
 #### Thunkers
 What is a thunker? A thunker is a function that takes an remote response and transforms them into a redux-dispatchable thunk that will populate the redux store
@@ -114,40 +114,26 @@ const selectRetiredAuthors = createSelector(orm, (session) => session.Author.get
 ```
 
 #### Dispatchables
-`dispatch`able objects (aka requests) are the bridge between the `Ember.Route` and the outside world. They wrap the API, thunker, and friends so that Ember doesn't have to ever know about the details of the outside world.
+As per exisiting Ember convention, `Ember.Route`'s model hook is where you should perform your remote calls and populate your redux store.
 
-`app/requests/find`
+`app/routes/user`
 ```javascript
-import userAPI from 'dummy/remote-apis/user';
-import { exampleThunker } from 'dummy/thunkers/user';
-import ENV from 'dummy/config/environment';
-
-export default const findRequest = (id) => (dispatch) =>
-  userAPI.find(id, ENV)
-    .then(exampleThunker)
-    .then(dispatch));
-```
-
-We'll call this `dispatch`able thing a request. From Ember's point of view, `request`s should be opaque generators of IO. Because of this opacity, it's possible for us to switch request implementation strategies easily (e.g. using thunk, saga, or even a for loop)
-
-## How To Use
-Request objects serve as the contact point between ember's `model` hook and populating the redux store with data entries.
-
-Consider an example route `dummy/routes/user.js`
-```javascript
-import route from 'ember-redux/route';
-import Ember from 'ember';
-import findRequest from 'dummy/requests/find';
-
-const { inject: { service } } = Ember;
+import { findUser } from 'dummy/requests/user';
+import toThunk from 'dummy/thunkers/user';
 
 function model(dispatch, params) {
-  return dispatch(findRequest(params.id));
+  return findUser(params.id).then(toThunk).then(dispatch);
 }
+...
 ```
 
-#### Accessing Data
+How you string together your remote-api request into redux is up to your application. Although this example uses `redux-thunk`, if you need to use `redux-saga`, bare actions, or whatever, simply switch out the middle `toThunk` to whatever it is that creates an `dispatch`able object.
 
+## Accessing Data
+
+Ember redux presents 2 similar ways of accessing redux state data:
+
+### Via delegates
 And as with all redux apps, you pull data out of the redux store with designated `data-delegate` components like so:
 
 ```handlebars
@@ -178,6 +164,31 @@ function actions(dispatch) {
 export default connect(states, actions)(Ember.Component.extend({
   tagName: ''
 }));
+```
+
+### Via route-connect
+If you wish to skip writing a `data-delegate` component for each new route, it's also possible to use https://github.com/dustinfarris/ember-redux-route-connect
+
+* Note: as of Feburary 15, 2017, there is a bug in ember-redux-route-connect where if you're using ember-redux 2.x.x, you'll run in to an `npm:redux` missing bug. You can fix this by using my fork here:
+
+https://github.com/foxnewsnetwork/ember-redux-route-connect
+
+```javascript
+import { findUser } from 'dummy/requests/user';
+import toThunk from 'dummy/thunkers/user';
+import route from 'ember-redux/route';
+import connect from 'ember-redux-route-connect';
+
+function model(dispatch, params) {
+  return findUser(params.id).then(toThunk).then(dispatch);
+}
+function statesToCompute(state, params) {
+  return {
+    model: selectUserById(state, params.id)
+  };
+}
+const Route = route({ model })(Ember.Route.extend({}));
+export default connect(statesToCompute)(Route);
 ```
 
 ## Boilerplate Checklist
