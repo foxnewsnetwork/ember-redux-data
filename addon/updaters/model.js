@@ -6,7 +6,9 @@ const NULL_MODEL = {
   update: NOOP,
   create: NOOP,
   withId: () => NULL_MODEL,
-  delete: NOOP
+  delete: NOOP,
+  hasId: NOOP,
+  get: NOOP
 };
 function createOrUpdate(Model, data) {
   const id = data[Model.idAttribute];
