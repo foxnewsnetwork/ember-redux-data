@@ -1,6 +1,6 @@
 {
   "name": "ember-redux-data",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Redux-flavored data-layer for use with Ember",
   "keywords": [
     "ember-addon",
