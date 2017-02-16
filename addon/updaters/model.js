@@ -1,15 +1,8 @@
 import Actions from '../actions/model';
 import modelName from '../utils/model-name';
-
+import NullModel from '../utils/null-model';
 const NOOP = () => {};
-const NULL_MODEL = {
-  update: NOOP,
-  create: NOOP,
-  withId: () => NULL_MODEL,
-  delete: NOOP,
-  hasId: NOOP,
-  get: NOOP
-};
+
 function createOrUpdate(Model, data) {
   const id = data[Model.idAttribute];
   if(Model.hasId(id)) {
@@ -39,7 +32,8 @@ function get(obj, key, defaultResult) {
 }
 function findModel(session, payload) {
   const ModelClass = modelName(get(payload, 'ModelClass'));
-  return get(session, ModelClass, NULL_MODEL);
+  const modelZero = new NullModel(ModelClass);
+  return get(session, ModelClass, modelZero);
 }
 
 export default function update(session, action) {
