@@ -1,8 +1,8 @@
 import ownKeys from './own-keys';
 import Actions from '../actions/model';
 import Ember from 'ember';
-
-const { String: { singularize, capitalize } } = Ember;
+import { singularize } from 'ember-inflector';
+const { String: { capitalize } } = Ember;
 
 function add(f, g) {
   return (x) => { f(x); g(x); };

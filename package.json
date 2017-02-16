@@ -1,6 +1,6 @@
 {
   "name": "ember-redux-data",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Redux-flavored data-layer for use with Ember",
   "keywords": [
     "ember-addon",
@@ -55,6 +55,7 @@
     "ember-data": "^2.11.0",
     "ember-disable-prototype-extensions": "^1.1.0",
     "ember-export-application-global": "^1.0.5",
+    "ember-inflector": "1.11.0",
     "ember-load-initializers": "^0.6.0",
     "ember-lodash-shim": "1.2.0",
     "ember-normalizr-shim": "0.1.2",
