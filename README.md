@@ -38,7 +38,47 @@ export function find(id) {
 In general, keep your request functions as simple and stupid as possible. They shouldn't know about your application at all and so should theoretically be drag-and-droppable into any application.
 
 #### Thunkers
-What is a thunker? A thunker is a function that takes an remote response and transforms them into a redux-dispatchable thunk that will populate the redux store
+First, what is a thunk? A thunk is a plain old javascript function which takes 1 argument (a function conventionally called `dispatch`) and uses that dispatch function inside it.
+
+Q: But why do we need it?
+A: Often when dealing with upstream remote sources, a server might return a response that contains many local many local models, for example, a GET to `/api/users` might return:
+
+```javascript
+const serverResponse = {
+  "users": {
+    "miku": { "id": "miku", "name": "miku hatsune" },
+    "luka": { "id": "luka", "name": "luka megurine" },
+    "gumi": { "id": "gumi", "name": "GUMI" }
+  },
+  "songs": {
+    "ifudodo": { "name": "ifudodo", "bpm": 145, "singers": ["miku", "luka", "gumi"] }
+  }
+};
+```
+From the point of view of populating our ORM store with emitting redux actions, we'll want to emit 4 actions:
+
+```javascript
+const actionMiku = { type: "UPDATE_USER", payload: serverResponse.users.miku };
+const actionLuka = { type: "UPDATE_USER", payload: serverResponse.users.luka };
+const actionGumi = ...
+```
+
+but how do we do that? The simplest most obvious answer is to batch the actions, and that's exactly what `redux-thunk` does:
+
+```javascript
+const batchedActionThunk = (dispatch) => {
+  dispatch(actionMiku);
+  dispatch(actionLUka);
+  dispatch(actionGumi);
+  dispatch(actionSongs);
+  ...
+};
+
+/* Later... */
+redux.dispatch(batchedActionThunk);
+```
+
+So what is a thunker? A thunker is a function that takes an remote response and transforms them into a thunk that will populate the redux store
 
 ```typescript
 type Thunk = (dispatch: Dispatch): Promise
@@ -46,7 +86,7 @@ type Thunk = (dispatch: Dispatch): Promise
 type Thunker = (response: JSON): Thunk
 ```
 
-Think of such a thunk as a batch of redux-actions.
+In other words, thunkers make thunks.
 
 To follow the convention set aside by redux's normalizr library, all thunkers should have the following form:
 
